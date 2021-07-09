@@ -1,0 +1,8 @@
+# You can install dependencies fot yourself.
+node_modules/
+
+# Ignore personal configs
+.vscode/
+
+# Ignore production build
+build/
