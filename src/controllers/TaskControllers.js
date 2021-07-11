@@ -32,12 +32,10 @@ export default {
   // update one task
   update: async (req, res, next) => {
     try {
-      console.log("AQUI EL PEX -->" + req.params.task_id);
       const reg = await models.Task.update(
         {
           title: req.body.title,
           content: req.body.content,
-          task_status: req.body.task_status,
           record_modified_on_date: new Date(),
           record_updated_by_user: req.body.responsable_user,
         },
@@ -45,7 +43,7 @@ export default {
           where: {
             TASK_ID: req.params.task_id,
             FK_RECORD_CREATED_BY_USER: req.body.responsable_user,
-            task_status: req.body.task_status,
+            task_status: true,
           },
         }
       );
@@ -53,6 +51,34 @@ export default {
         where: { TASK_ID: req.params.task_id },
       });
       res.status(200).json(filterReg);
+    } catch (e) {
+      res.status(500).send({
+        message: "Ocurrió un error",
+      });
+      next(e);
+    }
+  },
+  // deactivate one task
+  deactivate: async (req, res, next) => {
+    try {
+      const reg = await models.Task.update(
+        {
+          task_status: false,
+          record_updated_by_user: req.body.responsable_user,
+          record_modified_on_date: new Date(),
+        },
+        {
+          where: {
+            TASK_ID: req.params.task_id,
+            FK_RECORD_CREATED_BY_USER: req.body.responsable_user,
+            task_status: true,
+          },
+        }
+      );
+      const filterReg = await models.Task.findOne({
+        where: { TASK_ID: req.params.task_id },
+      });
+      res.status(200).json({ task_deactivate_id: req.params.task_id });
     } catch (e) {
       res.status(500).send({
         message: "Ocurrió un error",
