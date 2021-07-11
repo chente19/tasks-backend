@@ -21,9 +21,9 @@ export const myORM = new Sequelize("notesdatabase", "root", "somerootpassword", 
 async function testDb() {
   try {
     await myORM.authenticate();
-    console.log("Conexión a sql-server db exitosa.");
+    console.log("Connection to MYSQL-SERVER db success.");
   } catch (error) {
-    console.error("ERROR AL CONECTAR A SQL-SERVER:", error);
+    console.error("ERROR: MYSQL-SERVER connection --> ", error);
   }
 }
 
