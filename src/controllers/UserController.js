@@ -105,16 +105,6 @@ export default {
   // Get one user
   query: async (req, res, next) => {
     try {
-      /* const reg = await models.TheUser.findOne({
-        user_number: req.params.user_number,
-      });
-      if (!reg) {
-        res.status(404).send({
-          message: "El usuario no existe",
-        });
-      } else {
-        res.status(200).json(reg);
-      } */
       res.status(404).send({
         message: "Pagina no existente por el momento",
       });

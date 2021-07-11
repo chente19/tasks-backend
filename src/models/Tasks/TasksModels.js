@@ -29,6 +29,11 @@ const Task = myORM.define("tasks", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  task_status: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+    defaultValue: true
+  },
   FK_RECORD_CREATED_BY_USER: {
     type: Sequelize.INTEGER,
     allowNull: false,

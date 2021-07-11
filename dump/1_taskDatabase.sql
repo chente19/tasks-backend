@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS notesdatabase.tasks(
 	record_updated_by_user varchar(255) NOT NULL DEFAULT 'NA',
 	title varchar(255) NOT NULL,
 	content varchar(255) NOT NULL,
+	task_status BOOL DEFAULT 1,
 	FK_RECORD_CREATED_BY_USER int NOT NULL,
 	FOREIGN KEY (FK_RECORD_CREATED_BY_USER) REFERENCES notesdatabase.users(USER_NUMBER)
 );
