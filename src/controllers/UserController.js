@@ -2,7 +2,6 @@ import models from "./../models";
 import bcrypt from "bcryptjs";
 import token from "./../services/token";
 import dayjs from "dayjs";
-import Sequelize from "sequelize";
 import { Op } from "sequelize";
 
 async function takeIDRole(role_name_request) {
@@ -38,53 +37,6 @@ async function autoIncrementUserCheck() {
   }
 }
 
-async function emailExist(a_user_email) {
-  try {
-    const regUser = await models.User.findOne({
-      where: {
-        user_email: a_user_email,
-      },
-    });
-    if (regUser.user_email == null) {
-      return false;
-    } else if (regUser.user_email == a_user_email) {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (error) {
-    return false;
-  }
-}
-
-async function checkIsSameLastEmail(a_user_number, a_user_email) {
-  try {
-    const regUser = await models.User.findOne({
-      where: {
-        USER_NUMBER: a_user_number,
-        user_email: a_user_email,
-      },
-    });
-    if (regUser.user_email == a_user_email) {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (error) {
-    return false;
-  }
-}
-
-async function createIDIfNullEmail(a_email) {
-  let newMail = Sequelize.literal("newid()");
-  if (a_email == "noemail@noemail.com") {
-    return newMail;
-  } else {
-    console.log("Debe entar aqui");
-    return a_email;
-  }
-}
-
 export default {
   // LOGIN a one user
   login: async (req, res, next) => {
@@ -116,7 +68,6 @@ export default {
             ],
             where: { USER_NUMBER: req.body.user_number },
             attributes: [
-              "user_email",
               "USER_NUMBER",
               "user_name",
               "user_first_lastname",
@@ -144,21 +95,8 @@ export default {
       req.body.user_password = await bcrypt.hash(req.body.user_password, 10);
       req.body.USER_NUMBER = await autoIncrementUserCheck();
       req.body.FK_USER_ROLE = await takeIDRole(req.body.user_role);
-      let sameEmail = false;
-      // verifico que la peticion sea con email o sin email
-      if (req.body.user_email) {
-        sameEmail = await emailExist(req.body.user_email);
-      } else {
-        sameEmail = false;
-      }
-      if (sameEmail) {
-        res
-          .status(409)
-          .send({ message: "No es posible registrar, email ya en uso." });
-      } else {
-        const reg = await models.User.create(req.body);
-        res.status(200).json({ new_user_number: reg.USER_NUMBER });
-      }
+      const reg = await models.User.create(req.body);
+      res.status(200).json({ new_user_number: reg.USER_NUMBER });
     } catch (error) {
       res.status(500).send({ message: "No es posible crear el usuario" });
       next(error);
@@ -209,7 +147,7 @@ export default {
       next(e);
     }
   },
-  // Paginacion de usuarios de 25 en 25 a partir del numeor de usuario
+  // Pagination: 25 users per request
   paginateUsers: async (req, res, next) => {
     try {
       const leftSide = parseInt(req.params.paginate_init);
@@ -245,12 +183,6 @@ export default {
     try {
       let pass = req.body.user_password;
       let fkNumberRole = await takeIDRole(req.body.user_role);
-      let sameEmail = await emailExist(req.body.user_email);
-      let lastEmailIsTheSame = await checkIsSameLastEmail(
-        req.params.user_number,
-        req.body.user_email
-      );
-      req.body.user_email = await createIDIfNullEmail(req.body.user_email);
       // reg0 == before the real reg to return, ineed for take the password
       const reg0 = await models.User.findOne({
         where: { USER_NUMBER: req.params.user_number },
@@ -258,34 +190,24 @@ export default {
       if (pass != "") {
         req.body.user_password = await bcrypt.hash(pass, 10);
       }
-      if (lastEmailIsTheSame) {
-        sameEmail = false;
-      }
-      if (sameEmail) {
-        res.status(409).send({
-          message: "No es posible registrar, email ya en uso por otro usuario.",
-        });
-      } else {
-        const reg = await models.User.update(
-          {
-            user_name: req.body.user_name,
-            user_first_lastname: req.body.user_first_lastname,
-            user_second_lastname: req.body.user_second_lastname,
-            user_email: req.body.user_email,
-            user_password:
-              pass != "" ? req.body.user_password : reg0.user_password,
-            FK_USER_ROLE: fkNumberRole,
-            user_status: req.body.user_status,
-            user_modified_on_date: new Date(),
-            user_modified_by: req.body.user_modified_by,
-          },
-          { where: { USER_NUMBER: reg0.USER_NUMBER } }
-        );
-        const filterReg = await models.User.findOne({
-          where: { USER_NUMBER: req.params.user_number },
-        });
-        res.status(200).json(filterReg);
-      }
+      const reg = await models.User.update(
+        {
+          user_name: req.body.user_name,
+          user_first_lastname: req.body.user_first_lastname,
+          user_second_lastname: req.body.user_second_lastname,
+          user_password:
+            pass != "" ? req.body.user_password : reg0.user_password,
+          FK_USER_ROLE: fkNumberRole,
+          user_status: req.body.user_status,
+          user_modified_on_date: new Date(),
+          user_modified_by: req.body.user_modified_by,
+        },
+        { where: { USER_NUMBER: reg0.USER_NUMBER } }
+      );
+      const filterReg = await models.User.findOne({
+        where: { USER_NUMBER: req.params.user_number },
+      });
+      res.status(200).json(filterReg);
     } catch (e) {
       res.status(500).send({
         message: "Ocurrió un error",

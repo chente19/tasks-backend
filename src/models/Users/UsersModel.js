@@ -3,9 +3,8 @@ import { myORM } from "../../database.js";
 // join tables
 import Task from "../Tasks/TasksModels";
 
-
 const User = myORM.define(
-  "users",
+  "user",
   {
     USER_NUMBER: {
       type: Sequelize.INTEGER,
