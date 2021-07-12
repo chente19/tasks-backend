@@ -86,4 +86,35 @@ export default {
       next(e);
     }
   },
+  list: async (req, res, next) => {
+    try {
+      const reg = await models.Task.findAll({
+        attributes: {
+          exclude: [
+            "record_created_date",
+            "record_modified_on_date",
+            "record_updated_by_user",
+            "task_status",
+            "FK_RECORD_CREATED_BY_USER",
+          ],
+        },
+        where: {
+          FK_RECORD_CREATED_BY_USER: req.params.responsable_user,
+          task_status: true,
+        },
+      });
+      if (!reg) {
+        res.status(404).send({
+          message: "Datos no encontrados",
+        });
+      } else {
+        res.status(200).json(reg);
+      }
+    } catch (error) {
+      res.status(500).send({
+        message: "Error al ejecutar la consulta",
+      });
+      next(error);
+    }
+  },
 };
