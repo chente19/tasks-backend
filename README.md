@@ -59,7 +59,7 @@ Connection to MYSQL-SERVER db success.
 + use the below `json file`
 
 ```bash
-./tasks_endpoints.json
+./notes_endpoints.json
 ```
 
 ![](./readme_images/1.png)
